@@ -18,7 +18,7 @@ const Register = () => {
     }
 
     try {
-      const res = await axios.post('https://mailautomation-jhu8.onrender.com/api/user/register', {
+      const res = await axios.post('https://mail-automation-backend-2xjz.onrender.com/api/user/register', {
         name,
         email,
         password,

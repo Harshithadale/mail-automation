@@ -11,6 +11,7 @@ const NodeForm = ({ nodeType }) => {
 
   const token = localStorage.getItem('token');
 
+  // ---------------- Send Campaign ----------------
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     if (!token) return toast.error('Please login first');
@@ -20,10 +21,12 @@ const NodeForm = ({ nodeType }) => {
     setLoading(true);
 
     try {
+      console.log('Sending send request:', { campaignId: id });
+
       const res = await axios.post(
-        'https://mailautomation-jhu8.onrender.com/api/simulate/send',
+        'http://localhost:10000/api/simulate/send',
         { campaignId: id },
-        { headers: { Authorization: `Bearer ${token}` } }
+         { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
       );
 
       toast.update(toastId, {
@@ -47,6 +50,7 @@ const NodeForm = ({ nodeType }) => {
     }
   };
 
+  // ---------------- Delay Campaign ----------------
   const handleDelaySubmit = async (e) => {
     e.preventDefault();
     if (!token) return toast.error('Please login first');
@@ -57,8 +61,10 @@ const NodeForm = ({ nodeType }) => {
     setLoading(true);
 
     try {
+      console.log('Sending delay request:', { campaignId: id, delayInMs });
+
       const res = await axios.post(
-        'https://mailautomation-jhu8.onrender.com/api/simulate/delay',
+        'http://localhost:10000/api/simulate/delay',
         { campaignId: id, delayInMs },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -85,61 +91,70 @@ const NodeForm = ({ nodeType }) => {
     }
   };
 
-const handleConditionSubmit = async (e) => {
-  e.preventDefault();
-  if (!token) return toast.error('Please login first');
-  if (!id.trim() || !emailBody.trim()) return toast.error('Please enter required fields');
-  if (!condition.clicked && !condition.purchased)
-    return toast.error('Please select at least one condition');
+  // ---------------- Condition Campaign ----------------
+  const handleConditionSubmit = async (e) => {
+    e.preventDefault();
+    if (!token) return toast.error('Please login first');
+    if (!id.trim() || !emailBody.trim()) return toast.error('Please enter required fields');
+    if (!condition.clicked && !condition.purchased)
+      return toast.error('Please select at least one condition');
 
-  const toastId = toast.loading('📊 Sending conditional campaign...');
-  setLoading(true);
+    const toastId = toast.loading('📊 Sending conditional campaign...');
+    setLoading(true);
 
-  try {
-    console.log('Sending condition request:', {
-      campaignId: id,
-      condition: condition,
-      emailBody: emailBody,
-    });
+    try {
+      // Convert string "true"/"false" to actual booleans
+      const conditionPayload = {
+        clicked:
+          condition.clicked === 'true' ? true : condition.clicked === 'false' ? false : null,
+        purchased:
+          condition.purchased === 'true' ? true : condition.purchased === 'false' ? false : null,
+      };
 
-    const res = await axios.post(
-      'https://mailautomation-jhu8.onrender.com/api/simulate/condition',
-      {
+      console.log('Sending condition request:', {
         campaignId: id,
-        condition,
-        emailBody, 
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+        condition: conditionPayload,
+        emailBody,
+      });
+
+      const res = await axios.post(
+        'http://localhost:10000/api/simulate/condition',
+        {
+          campaignId: id,
+          condition: conditionPayload,
+          emailBody,
         },
-      }
-    );
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    toast.update(toastId, {
-      render: res.data.message || '✅ Condition-based emails sent',
-      type: 'success',
-      isLoading: false,
-      autoClose: 3000,
-    });
+      toast.update(toastId, {
+        render: res.data.message || '✅ Condition-based emails sent',
+        type: 'success',
+        isLoading: false,
+        autoClose: 3000,
+      });
 
-    setId('');
-    setCondition({ clicked: '', purchased: '' });
-    setEmailBody('');
-  } catch (err) {
-    console.error(err);
-    toast.update(toastId, {
-      render: '❌ Failed to send condition-based emails',
-      type: 'error',
-      isLoading: false,
-      autoClose: 3000,
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+      setId('');
+      setCondition({ clicked: '', purchased: '' });
+      setEmailBody('');
+    } catch (err) {
+      console.error(err);
+      toast.update(toastId, {
+        render: '❌ Failed to send condition-based emails',
+        type: 'error',
+        isLoading: false,
+        autoClose: 3000,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-
+  // ---------------- Determine which submit handler ----------------
   const getSubmitHandler = () => {
     if (nodeType === 'delayNode') return handleDelaySubmit;
     if (nodeType === 'conditionNode') return handleConditionSubmit;
@@ -156,7 +171,8 @@ const handleConditionSubmit = async (e) => {
           : 'Trigger Campaign'}
       </h3>
 
-      <form onSubmit={getSubmitHandler()} className="space-y-4">
+      {/* ✅ Fixed form submit */}
+      <form onSubmit={(e) => getSubmitHandler()(e)} className="space-y-4">
         <input
           type="text"
           name="campaignId"
@@ -181,34 +197,33 @@ const handleConditionSubmit = async (e) => {
 
         {nodeType === 'conditionNode' && (
           <>
-<label className="block font-medium">Clicked</label>
-<select
-  value={condition.clicked}
-  onChange={(e) =>
-    setCondition({ ...condition, clicked: e.target.value })
-  }
-  className="w-full border rounded p-2"
-  required
->
-  <option value="">-- Select Clicked Status --</option>
-  <option value="true">Clicked</option>
-  <option value="false">Not Clicked</option>
-</select>
+            <label className="block font-medium">Clicked</label>
+            <select
+              value={condition.clicked}
+              onChange={(e) =>
+                setCondition({ ...condition, clicked: e.target.value })
+              }
+              className="w-full border rounded p-2"
+              required
+            >
+              <option value="">-- Select Clicked Status --</option>
+              <option value="true">Clicked</option>
+              <option value="false">Not Clicked</option>
+            </select>
 
-<label className="block font-medium">Purchased</label>
-<select
-  value={condition.purchased}
-  onChange={(e) =>
-    setCondition({ ...condition, purchased: e.target.value })
-  }
-  className="w-full border rounded p-2"
-  required
->
-  <option value="">-- Select Purchased Status --</option>
-  <option value="true">Purchased</option>
-  <option value="false">Not Purchased</option>
-</select>
-
+            <label className="block font-medium">Purchased</label>
+            <select
+              value={condition.purchased}
+              onChange={(e) =>
+                setCondition({ ...condition, purchased: e.target.value })
+              }
+              className="w-full border rounded p-2"
+              required
+            >
+              <option value="">-- Select Purchased Status --</option>
+              <option value="true">Purchased</option>
+              <option value="false">Not Purchased</option>
+            </select>
 
             <textarea
               value={emailBody}

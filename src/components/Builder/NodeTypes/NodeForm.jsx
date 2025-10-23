@@ -24,9 +24,9 @@ const NodeForm = ({ nodeType }) => {
       console.log('Sending send request:', { campaignId: id });
 
       const res = await axios.post(
-        'https://mail-automation-backend-fxq5.onrender.com/api/simulate/send',
+        'https://mail-automation-backend-fxq5.onrender.com/api/campaign/trigger',
         { campaignId: id },
-         { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
       );
 
       toast.update(toastId, {
@@ -64,7 +64,7 @@ const NodeForm = ({ nodeType }) => {
       console.log('Sending delay request:', { campaignId: id, delayInMs });
 
       const res = await axios.post(
-        'https://mail-automation-backend-fxq5.onrender.com/api/simulate/delay',
+        'https://mail-automation-backend-fxq5.onrender.com/api/campaign/delay',
         { campaignId: id, delayInMs },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -103,7 +103,6 @@ const NodeForm = ({ nodeType }) => {
     setLoading(true);
 
     try {
-      // Convert string "true"/"false" to actual booleans
       const conditionPayload = {
         clicked:
           condition.clicked === 'true' ? true : condition.clicked === 'false' ? false : null,
@@ -118,17 +117,13 @@ const NodeForm = ({ nodeType }) => {
       });
 
       const res = await axios.post(
-        'https://mail-automation-backend-fxq5.onrender.com/api/simulate/condition',
+        'https://mail-automation-backend-fxq5.onrender.com/api/campaign/condition',
         {
           campaignId: id,
           condition: conditionPayload,
           emailBody,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       toast.update(toastId, {
@@ -154,7 +149,6 @@ const NodeForm = ({ nodeType }) => {
     }
   };
 
-  // ---------------- Determine which submit handler ----------------
   const getSubmitHandler = () => {
     if (nodeType === 'delayNode') return handleDelaySubmit;
     if (nodeType === 'conditionNode') return handleConditionSubmit;
@@ -171,7 +165,6 @@ const NodeForm = ({ nodeType }) => {
           : 'Trigger Campaign'}
       </h3>
 
-      {/* ✅ Fixed form submit */}
       <form onSubmit={(e) => getSubmitHandler()(e)} className="space-y-4">
         <input
           type="text"
@@ -200,9 +193,7 @@ const NodeForm = ({ nodeType }) => {
             <label className="block font-medium">Clicked</label>
             <select
               value={condition.clicked}
-              onChange={(e) =>
-                setCondition({ ...condition, clicked: e.target.value })
-              }
+              onChange={(e) => setCondition({ ...condition, clicked: e.target.value })}
               className="w-full border rounded p-2"
               required
             >
@@ -214,9 +205,7 @@ const NodeForm = ({ nodeType }) => {
             <label className="block font-medium">Purchased</label>
             <select
               value={condition.purchased}
-              onChange={(e) =>
-                setCondition({ ...condition, purchased: e.target.value })
-              }
+              onChange={(e) => setCondition({ ...condition, purchased: e.target.value })}
               className="w-full border rounded p-2"
               required
             >

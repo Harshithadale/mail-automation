@@ -24,7 +24,7 @@ const AddCampaignForm = () => {
 
     try {
       const res = await axios.post(
-        'https://mail-automation-backend-fxq5.onrender.com/api/campaign/add',
+        'http://localhost:10000/api/campaign/add',
         {
           title,
           body,

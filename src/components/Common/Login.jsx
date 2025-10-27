@@ -17,7 +17,7 @@ const Login = () => {
     }
 
     try {
-      const response = await axios.post('https://mail-automation-backend-fxq5.onrender.com/api/user/login', {
+      const response = await axios.post('http://localhost:10000/api/user/login', {
         email: Email,
         password: Password,
       });

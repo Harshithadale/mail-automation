@@ -24,7 +24,7 @@ const NodeForm = ({ nodeType }) => {
       console.log('Sending send request:', { campaignId: id });
 
       const res = await axios.post(
-        'https://mail-automation-backend-fxq5.onrender.com/api/simulate/send',
+        'http://localhost:10000/api/simulate/send',
         { campaignId: id },
          { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
       );
@@ -64,7 +64,7 @@ const NodeForm = ({ nodeType }) => {
       console.log('Sending delay request:', { campaignId: id, delayInMs });
 
       const res = await axios.post(
-        'https://mail-automation-backend-fxq5.onrender.com/api/simulate/delay',
+        'http://localhost:10000/api/simulate/delay',
         { campaignId: id, delayInMs },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -118,7 +118,7 @@ const NodeForm = ({ nodeType }) => {
       });
 
       const res = await axios.post(
-        'https://mail-automation-backend-fxq5.onrender.com/api/simulate/condition',
+        'http://localhost:10000/api/simulate/condition',
         {
           campaignId: id,
           condition: conditionPayload,
